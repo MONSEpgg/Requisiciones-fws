@@ -251,7 +251,7 @@ const CATALOGO = [{"descripcion": "GUANTE con Puntos Pvc en Palma y Dorso", "mod
 // ══════════════════════════════════════════
 // CONFIGURACIÓN — REEMPLAZA CON TU URL DE APPS SCRIPT
 // ══════════════════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxTdyRuJxwJ2vrQnZKRGlB8bHkXNZ_4gkBEoz2nMsvW2LVeuuLzk6STimSEgzdeN2T7wQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhKvf7VogljXkXjiaclNHxStIkgX2HFJwB1XmRa0RJEE7hi2czOxJLYp8al4FMkJSS9A/exec';
 
 // Aprobadores y sus montos máximos
 const APROBADORES = [
@@ -468,23 +468,19 @@ function enviarRequisicion() {
   setStatus('sending','⏳ Enviando requisición...');
   document.getElementById('btn-enviar').disabled = true;
 
+  // no-cors: el script se ejecuta pero no podemos leer la respuesta — es normal
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
+    mode: 'no-cors',
     body: JSON.stringify(payload),
     headers: { 'Content-Type': 'text/plain' },
   })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data.ok) {
-      if (data.folio) document.getElementById('folio-num').textContent = data.folio;
-      setStatus('ok', '✅ Requisición ' + (data.folio||'') + ' enviada. Los aprobadores recibirán el correo en breve.');
-      showToast('¡Requisición ' + (data.folio||'') + ' enviada!', 'ok');
-    } else {
-      throw new Error(data.error || 'Error desconocido');
-    }
+  .then(function() {
+    setStatus('ok', '✅ Requisición enviada correctamente. Los aprobadores recibirán el correo en breve.');
+    showToast('¡Requisición enviada!', 'ok');
   })
   .catch(function(e) {
-    setStatus('err', '❌ Error: ' + e.message);
+    setStatus('err', '❌ Error de conexión: ' + e.message);
     showToast('Error al enviar', 'err');
     document.getElementById('btn-enviar').disabled = false;
   });
