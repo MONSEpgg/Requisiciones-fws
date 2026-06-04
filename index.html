@@ -251,7 +251,7 @@ const CATALOGO = [{"descripcion": "GUANTE con Puntos Pvc en Palma y Dorso", "mod
 // ══════════════════════════════════════════
 // CONFIGURACIÓN — REEMPLAZA CON TU URL DE APPS SCRIPT
 // ══════════════════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzI5qpUBQL7l-ZQO4KrdTPmC6Z4DXjD1nraRJGQngLO6LOkJ5tVpdoslpdNPNrO4SRlKA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxTdyRuJxwJ2vrQnZKRGlB8bHkXNZ_4gkBEoz2nMsvW2LVeuuLzk6STimSEgzdeN2T7wQ/exec';
 
 // Aprobadores y sus montos máximos
 const APROBADORES = [
@@ -468,54 +468,26 @@ function enviarRequisicion() {
   setStatus('sending','⏳ Enviando requisición...');
   document.getElementById('btn-enviar').disabled = true;
 
-  // Usamos no-cors + iframe para evitar bloqueo CORS al abrir como archivo local
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = APPS_SCRIPT_URL;
-  form.target = 'iframe-envio';
-  form.style.display = 'none';
-  const inp = document.createElement('input');
-  inp.type = 'hidden';
-  inp.name = 'payload';
-  inp.value = JSON.stringify(payload);
-  form.appendChild(inp);
-  document.body.appendChild(form);
-
-  let iframe = document.getElementById('iframe-envio');
-  if (!iframe) {
-    iframe = document.createElement('iframe');
-    iframe.name = 'iframe-envio';
-    iframe.id = 'iframe-envio';
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-  }
-
-  iframe.onload = function() {
-    try {
-      const resp = JSON.parse(iframe.contentDocument.body.innerText);
-      if (resp.ok) {
-        if (resp.folio) document.getElementById('folio-num').textContent = resp.folio;
-        setStatus('ok', '✅ Requisición ' + (resp.folio||'') + ' enviada correctamente. Los aprobadores recibirán el correo en breve.');
-        showToast('¡Requisición ' + (resp.folio||'') + ' enviada!', 'ok');
-      } else {
-        throw new Error(resp.error || 'Error desconocido');
-      }
-    } catch(e) {
-      // Si no podemos leer la respuesta (cross-origin) asumimos éxito
-      setStatus('ok', '✅ Requisición enviada. Revisa tu correo para confirmar.');
-      showToast('¡Requisición enviada!', 'ok');
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'text/plain' },
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.ok) {
+      if (data.folio) document.getElementById('folio-num').textContent = data.folio;
+      setStatus('ok', '✅ Requisición ' + (data.folio||'') + ' enviada. Los aprobadores recibirán el correo en breve.');
+      showToast('¡Requisición ' + (data.folio||'') + ' enviada!', 'ok');
+    } else {
+      throw new Error(data.error || 'Error desconocido');
     }
-    document.body.removeChild(form);
-  };
-
-  iframe.onerror = function() {
-    setStatus('err', '❌ Error al enviar. Verifica tu conexión.');
+  })
+  .catch(function(e) {
+    setStatus('err', '❌ Error: ' + e.message);
     showToast('Error al enviar', 'err');
     document.getElementById('btn-enviar').disabled = false;
-    document.body.removeChild(form);
-  };
-
-  form.submit();
+  });
 }
 
 function setStatus(type,msg) {
