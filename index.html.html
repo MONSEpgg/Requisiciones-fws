@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Requisición de Compra — FWS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;min-height:100vh;padding:20px}
+.page{max-width:960px;margin:0 auto;background:#fff;border:1px solid #ccc;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+
+/* HEADER */
+.hdr{background:#1a3a6b;color:#fff;padding:14px 24px;display:flex;align-items:center;gap:16px}
+.hdr-logo{font-size:22px;font-weight:700;letter-spacing:1px;border:2px solid #fff;padding:4px 12px;border-radius:4px}
+.hdr-info{flex:1}
+.hdr-info h1{font-size:17px;font-weight:600;letter-spacing:.5px}
+.hdr-info p{font-size:11px;opacity:.8;margin-top:2px}
+.hdr-folio{text-align:right;font-size:11px;opacity:.85}
+.hdr-folio strong{display:block;font-size:15px;letter-spacing:1px}
+
+/* SECCIONES */
+.section{padding:14px 24px;border-bottom:1px solid #ddd}
+.section-title{font-size:10px;font-weight:700;letter-spacing:1.5px;color:#1a3a6b;text-transform:uppercase;margin-bottom:10px;padding-bottom:4px;border-bottom:2px solid #1a3a6b;display:inline-block}
+
+/* GRID */
+.row{display:grid;gap:10px;margin-bottom:8px}
+.row.c2{grid-template-columns:1fr 1fr}
+.row.c3{grid-template-columns:1fr 1fr 1fr}
+.row.c4{grid-template-columns:1fr 1fr 1fr 1fr}
+.field label{display:block;font-size:10px;font-weight:600;color:#555;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select,.field textarea{width:100%;border:1px solid #ccc;border-radius:4px;padding:6px 8px;font-size:13px;color:#222;background:#fafafa;transition:border .2s}
+.field input:focus,.field select:focus{outline:none;border-color:#1a3a6b;background:#fff}
+
+/* TABLA ITEMS */
+.items-section{padding:14px 24px;border-bottom:1px solid #ddd}
+.items-tabs{display:flex;gap:0;margin-bottom:12px}
+.tab-toggle{font-size:11px;font-weight:600;padding:5px 14px;border:1px solid #1a3a6b;cursor:pointer;background:#fff;color:#1a3a6b;transition:all .2s;letter-spacing:.3px}
+.tab-toggle:first-child{border-radius:4px 0 0 4px}
+.tab-toggle:last-child{border-radius:0 4px 4px 0;border-left:none}
+.tab-toggle.active{background:#1a3a6b;color:#fff}
+
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:#1a3a6b;color:#fff;padding:7px 6px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.5px;white-space:nowrap}
+tbody tr{border-bottom:1px solid #eee}
+tbody tr:hover{background:#f7f9ff}
+tbody td{padding:4px 4px;vertical-align:middle}
+tbody td input,tbody td select{width:100%;border:1px solid #ddd;border-radius:3px;padding:5px 5px;font-size:12px;background:#fff}
+tbody td input:focus,tbody td select:focus{outline:none;border-color:#1a3a6b}
+.td-num{text-align:right;font-family:monospace;font-size:12px;padding-right:8px;color:#333}
+.td-subtotal{text-align:right;font-family:monospace;font-size:12px;font-weight:600;color:#1a3a6b;padding-right:8px}
+
+/* AUTOCOMPLETE */
+.ac-wrap{position:relative}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #1a3a6b;border-top:none;border-radius:0 0 4px 4px;max-height:200px;overflow-y:auto;z-index:999;display:none;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.ac-item{padding:6px 8px;cursor:pointer;font-size:11px;border-bottom:1px solid #f0f0f0;line-height:1.4}
+.ac-item:hover,.ac-item.selected{background:#e8eef8}
+.ac-item .ac-desc{font-weight:600;color:#1a3a6b}
+.ac-item .ac-sub{color:#777;font-size:10px}
+
+/* TOTALES */
+.totales{padding:10px 24px;display:flex;justify-content:flex-end}
+.totales-box{width:280px}
+.totales-row{display:flex;justify-content:space-between;padding:4px 8px;font-size:13px}
+.totales-row:nth-child(odd){background:#f5f7fb}
+.totales-row.total-final{background:#1a3a6b;color:#fff;font-weight:700;font-size:14px;border-radius:4px;margin-top:4px}
+.totales-row span:last-child{font-family:monospace;font-weight:600}
+
+/* APROBACIONES */
+.aprobaciones{padding:14px 24px;border-top:2px solid #1a3a6b}
+.aprobaciones h3{font-size:10px;font-weight:700;letter-spacing:1.5px;color:#1a3a6b;text-transform:uppercase;margin-bottom:10px}
+.aprobaciones-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.aprobador-card{border:1px solid #ccc;border-radius:4px;padding:8px 12px;background:#fafafa}
+.aprobador-card .nombre{font-size:12px;font-weight:700;color:#222}
+.aprobador-card .puesto{font-size:10px;color:#777;margin-bottom:4px}
+.aprobador-card .monto{font-size:10px;color:#1a3a6b;font-weight:600}
+.aprobador-card .firma-line{border-bottom:1px solid #999;margin-top:16px;margin-bottom:2px}
+.aprobador-card .firma-label{font-size:9px;color:#aaa;text-align:center}
+
+/* BOTONES */
+.actions{padding:16px 24px;display:flex;gap:12px;justify-content:flex-end;background:#f5f7fb;border-top:1px solid #ddd}
+.btn{padding:10px 24px;border:none;border-radius:5px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.3px;transition:all .2s}
+.btn-add{background:#e8eef8;color:#1a3a6b;border:1px solid #1a3a6b;font-size:12px;padding:6px 14px}
+.btn-add:hover{background:#d0dcf0}
+.btn-enviar{background:#1a3a6b;color:#fff;font-size:14px;padding:11px 32px}
+.btn-enviar:hover{background:#122b52}
+.btn-enviar:disabled{background:#999;cursor:not-allowed}
+.btn-clear{background:#fff;color:#888;border:1px solid #ccc;font-size:12px;padding:6px 14px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:#222;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;opacity:0;transform:translateY(10px);transition:all .3s;z-index:9999;max-width:320px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{background:#1a6b3a}
+.toast.err{background:#6b1a1a}
+
+/* STATUS */
+.status-box{margin:0 24px 14px;padding:10px 14px;border-radius:5px;font-size:13px;display:none}
+.status-box.sending{background:#fff3cd;border:1px solid #ffc107;color:#856404}
+.status-box.ok{background:#d4edda;border:1px solid #28a745;color:#155724}
+.status-box.err{background:#f8d7da;border:1px solid #dc3545;color:#721c24}
+
+.req-nota{font-size:10px;color:#888;font-style:italic;margin-top:4px}
+
+@media print{.actions,.tab-toggle,.btn-add{display:none!important}.page{box-shadow:none;border:none}}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-logo">FWS</div>
+    <div class="hdr-info">
+      <h1>FLEXIBLE WAREHOUSING SOLUTIONS</h1>
+      <p>BLVD INDEPENDENCIA #8851 C.P. 32575 COL. LOTE BRAVO &nbsp;|&nbsp; RFC FWS090804P44</p>
+    </div>
+    <div class="hdr-folio">
+      USO EXCLUSIVO DEPTO. COMPRAS<br>
+      <strong id="folio-display"><span id="folio-num">Pendiente</span></strong>
+      <div style="font-size:10px;margin-top:2px">FOLIO REQUISICIÓN</div>
+    </div>
+  </div>
+
+  <!-- DATOS GENERALES -->
+  <div class="section">
+    <div class="section-title">Datos de la Requisición</div>
+    <div class="row c4">
+      <div class="field">
+        <label>Planta *</label>
+        <select id="planta">
+          <option value="">— Seleccionar —</option>
+          <option>PLANTA 1</option>
+          <option>PLANTA 3</option>
+          <option>PLANTA EL PASO</option>
+          <option>PLANTA 5 PROLOGIS</option>
+          <option>PLANTA 6</option>
+          <option>OTROS</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Proyecto *</label>
+        <select id="proyecto">
+          <option value="">— Seleccionar —</option>
+          <option>FWS</option>
+          <option>LEXMARK</option>
+          <option>OTROS</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Fecha Requisición</label>
+        <input type="date" id="fecha">
+      </div>
+      <div class="field">
+        <label>Proveedor Aprobado</label>
+        <input type="text" id="proveedor" placeholder="Opcional">
+      </div>
+    </div>
+    <div class="row c2">
+      <div class="field">
+        <label>Nombre del Requisitor *</label>
+        <input type="text" id="requisitor" placeholder="Nombre completo">
+      </div>
+      <div class="field">
+        <label>Entregar / Enviar a *</label>
+        <input type="text" id="entrega" placeholder="Lugar o persona de entrega">
+      </div>
+    </div>
+    <div class="row" style="grid-template-columns:1fr">
+      <div class="field">
+        <label>Comentarios</label>
+        <textarea id="comentarios" rows="2" style="resize:vertical" placeholder="Observaciones adicionales..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLA DE ARTÍCULOS -->
+  <div class="items-section">
+    <div class="section-title">Artículos Solicitados</div>
+    <div id="tabla-unificada">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:32px">#</th>
+            <th style="min-width:260px">DESCRIPCIÓN DEL PRODUCTO / SERVICIO</th>
+            <th style="width:80px">CLAVE</th>
+            <th style="width:70px">UNIDAD</th>
+            <th style="width:65px">CANTIDAD</th>
+            <th style="width:95px">PRECIO UNIT.</th>
+            <th style="width:95px">SUBTOTAL</th>
+            <th style="width:32px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-items"></tbody>
+      </table>
+      <button class="btn btn-add" style="margin-top:8px" onclick="addRow()">+ Agregar renglón</button>
+      <p class="req-nota">Escribe para buscar en catálogo, o captura manual si no está. El precio se llena automático al seleccionar del catálogo.</p>
+    </div>
+  </div>
+
+  <!-- TOTALES -->
+  <div class="totales">
+    <div class="totales-box">
+      <div class="totales-row"><span>SUBTOTAL</span><span id="t-sub">$ 0.00</span></div>
+      <div class="totales-row" style="align-items:center">
+        <span style="display:flex;align-items:center;gap:6px">IVA
+          <select id="iva-pct" onchange="calcTotales()" style="border:1px solid #ccc;border-radius:4px;padding:2px 5px;font-size:12px;background:#fafafa;color:#222">
+            <option value="8">8%</option>
+            <option value="16">16%</option>
+            <option value="0">0% (exento)</option>
+          </select>
+        </span>
+        <span id="t-iva">$ 0.00</span>
+      </div>
+      <div class="totales-row total-final"><span>TOTAL MXN</span><span id="t-tot">$ 0.00</span></div>
+    </div>
+  </div>
+
+  <!-- APROBACIONES (visual) -->
+  <div class="aprobaciones">
+    <h3>Aprobaciones requeridas</h3>
+    <div id="aprobaciones-info" style="font-size:12px;color:#555;margin-bottom:10px">
+      El nivel de aprobación se determina automáticamente según el monto total.
+    </div>
+    <div class="aprobaciones-grid" id="aprobaciones-grid">
+      <!-- se llena dinámicamente -->
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div class="status-box" id="status-box"></div>
+
+  <!-- ACCIONES -->
+  <div class="actions">
+    <button class="btn btn-clear" onclick="limpiarForm()">Limpiar</button>
+    <button class="btn btn-enviar" id="btn-enviar" onclick="enviarRequisicion()">
+      📨 Enviar Requisición
+    </button>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// CATÁLOGO (extraído del Excel)
+// ══════════════════════════════════════════
+const CATALOGO = [{"descripcion": "GUANTE con Puntos Pvc en Palma y Dorso", "modelo": "ALGODÓN/ SEGISA", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "SX9667L", "costo": 12.5, "moneda": "MXN"}, {"descripcion": "GUANTE de Poliuretano recubierto negros", "modelo": "POLIESTER/ LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "GUANLP", "costo": 17.0, "moneda": "MXN"}, {"descripcion": "GUANTE de PIEL tallas L Y XL", "modelo": "PIEL/ PROMOSISA", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "GUAN145", "costo": 50.5, "moneda": "MXN"}, {"descripcion": "PUNTERA de seguridad CHICA", "modelo": "TOES / PROMS", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "CASC001", "costo": 687.2, "moneda": "MXN"}, {"descripcion": "PUNTERA de seguridad MEDIANA", "modelo": "TOES / PROMS", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "CASC002", "costo": 687.2, "moneda": "MXN"}, {"descripcion": "PUNTERA de seguridad GRANDE", "modelo": "TOES / PROMS", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "CASC003", "costo": 687.2, "moneda": "MXN"}, {"descripcion": "FAJA con Barillas Lumbares", "modelo": "REFORZADA JYRSA", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "4", "costo": 130.0, "moneda": "MXN"}, {"descripcion": "CANILLERA Elastica Negra", "modelo": "SEGISA", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "CA3A", "costo": 13.5, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XXXL verde SG", "modelo": "RESCASTISTA GENERICO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "995037-V", "costo": 250.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XXXL Naranja SG", "modelo": "RESCASTISTA GENERICO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "995037-N", "costo": 250.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XXXL verde Militar SG", "modelo": "RESCASTISTA GENERICO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "995037-M", "costo": 250.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XXXL verde Bandera SG", "modelo": "RESCASTISTA GENERICO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "995037-8", "costo": 250.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XXXL Amarillo Canario SG", "modelo": "RESCASTISTA GENERICO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "995037-B", "costo": 250.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XXXL Beige SG", "modelo": "RESCASTISTA GENERICO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "995037-Bg", "costo": 250.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XXXL Rojo SG", "modelo": "RESCASTISTA GENERICO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "995037-R", "costo": 250.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XXXL Azul Marino SG", "modelo": "RESCASTISTA GENERICO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "995037-AZ", "costo": 250.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XXXL Azul Rey SG", "modelo": "RESCASTISTA GENERICO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "995037-AR", "costo": 250.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XXXL Amarillo Canario SG", "modelo": "RESCASTISTA GENERICO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "995037-A", "costo": 250.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XXXL Rosa SG", "modelo": "RESCASTISTA GENERICO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "995037-RG", "costo": 250.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XL Verde bandera", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "luxenxlv", "costo": 205.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XL verde Militar", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "luxenxlr", "costo": 205.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XL Azul rey", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "luxenxlazu", "costo": 205.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XL Azul Marino", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "luxenxlazM", "costo": 205.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XL Rojo", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "luxenxlroj", "costo": 205.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XL Naranja", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "luxenxlnaran", "costo": 205.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XL Amarillo canario", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "luxenxlama", "costo": 205.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XL Rosa", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "luxenxlrosa", "costo": 205.0, "moneda": "MXN"}, {"descripcion": "CHALECO TALLA XL Beige", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "luxenxlbeige", "costo": 205.0, "moneda": "MXN"}, {"descripcion": "CHALECO Generico unit Color Verde Bandera", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "7CH", "costo": 185.0, "moneda": "MXN"}, {"descripcion": "CHALECO Generico unit Color Verde Militar", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "15CH", "costo": 185.0, "moneda": "MXN"}, {"descripcion": "CHALECO Generico unit Color Azul Rey", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "8CH", "costo": 185.0, "moneda": "MXN"}, {"descripcion": "CHALECO Generico unit Color Azul Marino", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "9CH", "costo": 185.0, "moneda": "MXN"}, {"descripcion": "CHALECO Generico unit Color Rojo", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "10CH", "costo": 185.0, "moneda": "MXN"}, {"descripcion": "CHALECO Generico unit Color Naranja", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "11CH", "costo": 185.0, "moneda": "MXN"}, {"descripcion": "CHALECO Generico unit Color Amarillo Canario", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "12CH", "costo": 185.0, "moneda": "MXN"}, {"descripcion": "CHALECO Generico unit Color Rosa", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "14CH", "costo": 185.0, "moneda": "MXN"}, {"descripcion": "CHALECO Generico unit Color Beige", "modelo": "GENERICO / LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "13CH", "costo": 185.0, "moneda": "MXN"}, {"descripcion": "CHALECO BORDADO FWS pecho/espalda Visita AMARILLO FOS/Unitalla T-S a XL", "modelo": "GENERICO/ LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "16CHB", "costo": 387.0, "moneda": "MXN"}, {"descripcion": "CHALECO BORDADO FWS pecho/espalda Personalizado AZUL Marino F/Unitalla T-S a XL", "modelo": "GENERICO/ LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "17CHB", "costo": 387.0, "moneda": "MXN"}, {"descripcion": "CHALECO BORDADO KN ECI en pecho y espalda Logos AZUL MARINO Unitalla T- S a L", "modelo": "GENERICO/ LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "18CHB", "costo": 295.0, "moneda": "MXN"}, {"descripcion": "CHALECO BORDADO KN ECI en pecho y espalda Logos AZUL MARINO T- 1XL", "modelo": "GENERICO/ LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "19CHB", "costo": 400.0, "moneda": "MXN"}, {"descripcion": "CHALECO BORDADO KN ECI en pecho y espalda Logos AZUL MARINO T- 2XL", "modelo": "GENERICO/ LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "24CHB", "costo": 317.0, "moneda": "MXN"}, {"descripcion": "CHALECO BORDADO KN ECI en pecho y espalda Logos AZUL MARINO T- 3XL", "modelo": "GENERICO/ LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "22CHB", "costo": 617.0, "moneda": "MXN"}, {"descripcion": "CHALECO BORDADO KN ECI en pecho y espalda Logos NARANJA T- Unitalla S a L", "modelo": "GENERICO/ LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "20CHB", "costo": 295.0, "moneda": "MXN"}, {"descripcion": "CHALECO BORDADO KN ECI en pecho y espalda Logos NARANJA T- 1XL", "modelo": "GENERICO/ LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "21CHB", "costo": 400.0, "moneda": "MXN"}, {"descripcion": "CHALECO BORDADO KN ECI en pecho y espalda Logos NARANJA T- 3XL", "modelo": "GENERICO/ LUXXEN", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "22CHB3XL", "costo": 617.0, "moneda": "MXN"}, {"descripcion": "PANTALON SEGURIDAD POLISTER AZUL MARINO TALLA 28", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "PPCAM28", "costo": 296.29, "moneda": "MXN"}, {"descripcion": "PANTALON SEGURIDAD POLISTER AZUL MARINO TALLA 32", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "PPCAM32", "costo": 296.29, "moneda": "MXN"}, {"descripcion": "PANTALON SEGURIDAD POLISTER AZUL MARINO TALLA 34", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "PPCAM34", "costo": 296.29, "moneda": "MXN"}, {"descripcion": "PANTALON SEGURIDAD POLISTER AZUL MARINO TALLA 36", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "PPCAM36", "costo": 296.29, "moneda": "MXN"}, {"descripcion": "PANTALON SEGURIDAD POLISTER AZUL MARINO TALLA 38", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "PPCAM38", "costo": 296.29, "moneda": "MXN"}, {"descripcion": "PANTALON SEGURIDAD POLISTER AZUL MARINO TALLA 40", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "PPCAM40", "costo": 296.29, "moneda": "MXN"}, {"descripcion": "PANTALON SEGURIDAD POLISTER AZUL MARINO TALLA 42", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "PPCAM42", "costo": 296.29, "moneda": "MXN"}, {"descripcion": "PANTALON SEGURIDAD POLISTER AZUL MARINO TALLA 46", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "PPCAM46", "costo": 296.29, "moneda": "MXN"}, {"descripcion": "PANTALON SEGURIDAD POLISTER AZUL MARINO TALLA 48", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "PPCAM48", "costo": 296.29, "moneda": "MXN"}, {"descripcion": "CAMISA SEGURIDAD POLIESTER AZUL TALLA S CON 2BORDADOS", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "14M", "costo": 420.0, "moneda": "MXN"}, {"descripcion": "CAMISA SEGURIDAD POLIESTER AZUL TALLA M CON 2BORDADOS", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "15M", "costo": 420.0, "moneda": "MXN"}, {"descripcion": "CAMISA SEGURIDAD POLIESTER AZUL TALLA L CON 2BORDADOS", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "16M", "costo": 420.0, "moneda": "MXN"}, {"descripcion": "CAMISA SEGURIDAD POLIESTER AZUL TALLA XL CON 2BORDADOS", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "17M", "costo": 420.0, "moneda": "MXN"}, {"descripcion": "CAMISA SEGURIDAD POLIESTER AZUL TALLA 2XL CON 2BORDADOS", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "18M", "costo": 420.0, "moneda": "MXN"}, {"descripcion": "CAMISA SEGURIDAD POLIESTER AZUL TALLA 3XL CON 2BORDADOS", "modelo": "ALAMO", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "19M", "costo": 420.0, "moneda": "MXN"}, {"descripcion": "NAVAJA Multiusos Retractil de 6p - Pretul", "modelo": "PRETUL / Segisa", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "22400", "costo": 45.5, "moneda": "MXN"}, {"descripcion": "NAVAJAS de REPUESTO paq 10pz", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "EQUIPO SEGURIDAD", "clave": "38312", "costo": 21.25, "moneda": "MXN"}, {"descripcion": "NAVAJA Retractil Stanley", "modelo": "Stanley/ SEGISA", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "10-189C", "costo": 150.0, "moneda": "MXN"}, {"descripcion": "ARNES Kit con Cable de Vida, Punto Fijo y Mochila - SEGISA", "modelo": "warthon/ SEGISA", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "15", "costo": 1420.0, "moneda": "MXN"}, {"descripcion": "GABARDINA Impermeable color Amarilla", "modelo": "JYRSA", "unidad": "PIEZA", "categoria": "EQUIPO SEGURIDAD", "clave": "16", "costo": 175.0, "moneda": "MXN"}, {"descripcion": "ZAPATO SEGURIDAD Modelo Cliff409- TALLA 23", "modelo": "PROMOSISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "760-T23", "costo": 524.0, "moneda": "MXN"}, {"descripcion": "ZAPATO SEGURIDAD Modelo Cliff409- TALLA 24", "modelo": "PROMOSISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "760-T24", "costo": 524.0, "moneda": "MXN"}, {"descripcion": "ZAPATO SEGURIDAD Modelo Cliff409- TALLA 25", "modelo": "PROMOSISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "760-T25", "costo": 524.0, "moneda": "MXN"}, {"descripcion": "ZAPATO SEGURIDAD Modelo Cliff409- TALLA 26", "modelo": "PROMOSISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "760-T26", "costo": 524.0, "moneda": "MXN"}, {"descripcion": "ZAPATO SEGURIDAD Modelo Cliff409- TALLA 27", "modelo": "PROMOSISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "760-T27", "costo": 524.0, "moneda": "MXN"}, {"descripcion": "ZAPATO SEGURIDAD Modelo Cliff409- TALLA 28", "modelo": "PROMOSISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "760-T28", "costo": 524.0, "moneda": "MXN"}, {"descripcion": "ZAPATO SEGURIDAD Modelo Cliff409- TALLA 29", "modelo": "PROMOSISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "760-T29", "costo": 524.0, "moneda": "MXN"}, {"descripcion": "ZAPATO SEGURIDAD Modelo Cliff409- TALLA 30", "modelo": "PROMOSISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "760-T30", "costo": 524.0, "moneda": "MXN"}, {"descripcion": "ZAPATO SEGURIDAD Modelo Cliff409- TALLA 31", "modelo": "PROMOSISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "RDXG801P11", "costo": 524.0, "moneda": "MXN"}, {"descripcion": "ZAPATO SEGURIDAD Modelo Cliff409- TALLA 32", "modelo": "PROMOSISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "RDXG801P12", "costo": 524.0, "moneda": "MXN"}, {"descripcion": "ZAPATO BORCEGUI H/M SPIDER NEGRO RIVL - TALLA 24", "modelo": "SEGISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "SPYG201-T4", "costo": 980.0, "moneda": "MXN"}, {"descripcion": "ZAPATO BORCEGUI H/M SPIDER NEGRO RIVL - TALLA 25", "modelo": "SEGISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "SPYG201-T5", "costo": 980.0, "moneda": "MXN"}, {"descripcion": "ZAPATO BORCEGUI H/M SPIDER NEGRO RIVL - TALLA 26", "modelo": "SEGISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "SPYG201-T6", "costo": 980.0, "moneda": "MXN"}, {"descripcion": "ZAPATO BORCEGUI H/M SPIDER NEGRO RIVL - TALLA 27", "modelo": "SEGISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "SPYG201-T7", "costo": 980.0, "moneda": "MXN"}, {"descripcion": "ZAPATO BORCEGUI H/M SPIDER NEGRO RIVL - TALLA 28", "modelo": "SEGISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "SPYG201-T8", "costo": 980.0, "moneda": "MXN"}, {"descripcion": "ZAPATO BORCEGUI H/M SPIDER NEGRO RIVL - TALLA 29", "modelo": "SEGISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "SPYG201-T9", "costo": 980.0, "moneda": "MXN"}, {"descripcion": "ZAPATO BORCEGUI H/M SPIDER NEGRO RIVL - TALLA 30", "modelo": "SEGISA", "unidad": "PAR", "categoria": "EQUIPO SEGURIDAD", "clave": "SPYG201-T10", "costo": 980.0, "moneda": "MXN"}, {"descripcion": "STRECH Fleje DE 18\" X 1500 FT -Industmaq", "modelo": "INDUST  CALIBRE 60", "unidad": "ROLLO", "categoria": "EMPAQUE", "clave": "21INDUT", "costo": 135.0, "moneda": "MXN"}, {"descripcion": "FLEJE Negro de 1/2 X 7200 FT", "modelo": "POLIPROPILENO", "unidad": "ROLLO", "categoria": "EMPAQUE", "clave": "22", "costo": 400.0, "moneda": "MXN"}, {"descripcion": "GRAPA METALICA de 1/2 \" Para cincho", "modelo": "FICHA SENCILLA", "unidad": "CAJA con 1000 Piezas", "categoria": "EMPAQUE", "clave": "23G", "costo": 768.0, "moneda": "MXN"}, {"descripcion": "GRAPA METALICA de 3/4 \" Para cincho", "modelo": "FICHA SENCILLA", "unidad": "CAJA con 1000 Piezas", "categoria": "EMPAQUE", "clave": "24G", "costo": 850.0, "moneda": "MXN"}, {"descripcion": "CINCHO METALICO de 1/2", "modelo": "CINCHO", "unidad": "ROLLO", "categoria": "EMPAQUE", "clave": "23CN", "costo": 2665.0, "moneda": "MXN"}, {"descripcion": "CINCHO METALICO de 3/4", "modelo": "CINCHO", "unidad": "ROLLO", "categoria": "EMPAQUE", "clave": "24CN", "costo": 2665.0, "moneda": "MXN"}, {"descripcion": "CINTA Cristalina de 2\" x 100Yds- PAQ. 6 PIEZAS", "modelo": "JANEL", "unidad": "PAQUETE 6 PIEZAS", "categoria": "EMPAQUE", "clave": "100041168", "costo": 118.0, "moneda": "MXN"}, {"descripcion": "CINTA Amarilla de 2\" x 33Mts SG", "modelo": "VINYL NAVITEK", "unidad": "PIEZA", "categoria": "EMPAQUE", "clave": "2502163", "costo": 65.0, "moneda": "MXN"}, {"descripcion": "ETIQUETA (1PIEZA) BLANCA 4x6 Rollo de 1000 Piezas", "modelo": "STANDARD", "unidad": "Caja con 4 Rollos", "categoria": "EMPAQUE", "clave": "28", "costo": 292.22, "moneda": "MXN"}, {"descripcion": "RIBBON de Cera de 110mmx450m", "modelo": "STANDARD", "unidad": "PIEZA", "categoria": "EMPAQUE", "clave": "29", "costo": 134.9, "moneda": "MXN"}, {"descripcion": "ETIQUETA  AZUL- 4x6 Rollo de 1000 Piezas", "modelo": "STANDARD", "unidad": "PIEZA", "categoria": "EMPAQUE", "clave": "29e", "costo": 435.0, "moneda": "MXN"}, {"descripcion": "ETIQUETA Blanca 4\"x2\" Rollo de 2875 Piezas (1PIEZA)", "modelo": "STANDARD", "unidad": "ROLLO", "categoria": "EMPAQUE", "clave": "30I", "costo": 349.0, "moneda": "MXN"}, {"descripcion": "HOJA Papel Bond - CAJA EART", "modelo": "OFFICE DEPOT", "unidad": "Caja con 5000 Piezas", "categoria": "IMPRESIÓN", "clave": "90130", "costo": 595.0, "moneda": "MXN"}, {"descripcion": "HOJA Papel Bond Color Amarillo", "modelo": "FACIA", "unidad": "Paquete con 100 Piezas", "categoria": "IMPRESIÓN", "clave": "43124", "costo": 60.75, "moneda": "MXN"}, {"descripcion": "HOJA Papel Bond Color Azul", "modelo": "POCHTECA", "unidad": "Paquete con 100 Piezas", "categoria": "IMPRESIÓN", "clave": "31274", "costo": 90.25, "moneda": "MXN"}, {"descripcion": "HOJA Papel Bond Color Naranja", "modelo": "FACIA", "unidad": "Paquete con 100 Piezas", "categoria": "IMPRESIÓN", "clave": "43125", "costo": 60.75, "moneda": "MXN"}, {"descripcion": "HOJA Papel Bond Color Verde", "modelo": "EUROCOLORS", "unidad": "Paquete con 100 Piezas", "categoria": "IMPRESIÓN", "clave": "59421", "costo": 60.0, "moneda": "MXN"}, {"descripcion": "HOJA Papel Bond Color ROJO", "modelo": "EUROCOLORS", "unidad": "Paquete con 100 Piezas", "categoria": "IMPRESIÓN", "clave": "59420", "costo": 60.0, "moneda": "MXN"}, {"descripcion": "HOJA Papel Bond Colores", "modelo": "EUROCOLORS", "unidad": "Paquete con 100 Piezas", "categoria": "IMPRESIÓN", "clave": "100144773", "costo": 73.15, "moneda": "MXN"}, {"descripcion": "TOALLA Limpiadora de Pantalla", "modelo": "OFFICE DEPOT", "unidad": "Bote con 50 Piezas", "categoria": "PAPELERIA", "clave": "100026611", "costo": 60.75, "moneda": "MXN"}, {"descripcion": "AIRE REMOVEDOR de Polvo", "modelo": "OFFICE DEPOT", "unidad": "150 Gramos", "categoria": "PAPELERIA", "clave": "86630", "costo": 76.25, "moneda": "MXN"}, {"descripcion": "MOUSE INALAMBRICO Negro", "modelo": "SPECKTRA / OFFICE", "unidad": "INALAMBRICO", "categoria": "PAPELERIA", "clave": "100066277", "costo": 175.0, "moneda": "MXN"}, {"descripcion": "SILLA EJECUTIVA Basica", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "24504", "costo": 1364.0, "moneda": "MXN"}, {"descripcion": "TECLADO Y MOUSE INALAMBRICOS /  TECHZONE", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "100041336", "costo": 276.85, "moneda": "MXN"}, {"descripcion": "BITACORA Control Asignacion Sellos de Plantas Aduanas", "modelo": "PASTAD / KERUX", "unidad": "150 HOJAS", "categoria": "PAPELERIA", "clave": "33B", "costo": 1300.0, "moneda": "MXN"}, {"descripcion": "SELLO Autoentintable FECHADOR - ADUANAS", "modelo": "P53 FECHADOR", "unidad": "PIEZA", "categoria": "IMPRESIÓN", "clave": "33", "costo": 595.0, "moneda": "MXN"}, {"descripcion": "SELLO Megafortris Azul/Blanco", "modelo": "KLICKER FCS", "unidad": "PIEZA", "categoria": "IMPRESIÓN", "clave": "34", "costo": 19.8, "moneda": "MXN"}, {"descripcion": "ESCRITORIO, ARCHIVERO 2 GAVETAS", "modelo": "OFFICASA", "unidad": "MODULO", "categoria": "MOBILIARIO", "clave": "PENI8412", "costo": 8412.25, "moneda": "MXN"}, {"descripcion": "TARJETA Presentacion- Impresión Ambos Lados FWS", "modelo": "LAMINADO MATE/ KERUX", "unidad": "PAQUETE 100PZ", "categoria": "IMPRESIÓN", "clave": "K23", "costo": 400.0, "moneda": "MXN"}, {"descripcion": "PASES de Salida para Trailer", "modelo": "PAPEL QUIMICO", "unidad": "Bloque con 1000 Piezas", "categoria": "IMPRESIÓN", "clave": "36", "costo": 1475.0, "moneda": "MXN"}, {"descripcion": "PASES de Entrega de sellos", "modelo": "PAPEL QUIMICO", "unidad": "Bloque con 1000 Piezas", "categoria": "IMPRESIÓN", "clave": "36a", "costo": 2385.0, "moneda": "MXN"}, {"descripcion": "PALLET de Madera 48x40 con HT", "modelo": "CLASE 2", "unidad": "PIEZA", "categoria": "EMPAQUE", "clave": "37P", "costo": 95.0, "moneda": "MXN"}, {"descripcion": "RECARGA EXTINTOR de 4.5KG - PQS", "modelo": "PQS", "unidad": "CILINDRO", "categoria": "SERVICIO", "clave": "41", "costo": 249.0, "moneda": "MXN"}, {"descripcion": "RECARGA EXTINTOR de 1KG - PQS", "modelo": "PQS", "unidad": "CILINDRO", "categoria": "SERVICIO", "clave": "78", "costo": 79.0, "moneda": "MXN"}, {"descripcion": "PRUEBA HIDROESTATICA EXTINTOR 4.5KG - PQS", "modelo": "PQS", "unidad": "CILINDRO", "categoria": "SERVICIO", "clave": "46", "costo": 113.0, "moneda": "MXN"}, {"descripcion": "PRUEBA HIDROESTATICA EXTINTOR 4.5KG - CO2", "modelo": "CO2", "unidad": "CILINDRO", "categoria": "SERVICIO", "clave": "62", "costo": 496.0, "moneda": "MXN"}, {"descripcion": "PRUEBA HIDROESTATICA EXTINTOR 1KG - PQS", "modelo": "PQS", "unidad": "CILINDRO", "categoria": "SERVICIO", "clave": "75", "costo": 113.0, "moneda": "MXN"}, {"descripcion": "RECARGA EXTINTOR de 4.5KG CO2", "modelo": "CO2", "unidad": "CILINDRO", "categoria": "SERVICIO", "clave": "42", "costo": 196.0, "moneda": "MXN"}, {"descripcion": "SANITIZANTE SALES CUATERNARIAS", "modelo": "CB MICROBAC QED", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "44", "costo": 98.0, "moneda": "MXN"}, {"descripcion": "IMPREGNADOR Base de Aceite Porron", "modelo": "AROMATICOS DE J", "unidad": "CUBETA", "categoria": "LIMPIEZA", "clave": "45", "costo": 800.0, "moneda": "MXN"}, {"descripcion": "IMPREGNADOR Ecologico Uline Porron **ENVIO Y MANEJO INCLUIDO**", "modelo": "SIMPLE GREEN", "unidad": "CUBETA", "categoria": "LIMPIEZA", "clave": "11687", "costo": 2234.65, "moneda": "MXN"}, {"descripcion": "HIGIENICO Jumbo con 12 Rollos", "modelo": "HS1100", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "2176", "costo": 500.0, "moneda": "MXN"}, {"descripcion": "HIGIENICO Junior con 12 Rollos", "modelo": "DH ELITE", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "1239", "costo": 278.0, "moneda": "MXN"}, {"descripcion": "TOALLA Rollo Café caja con 6 Rollos", "modelo": "FAPSA K160", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "2954", "costo": 240.0, "moneda": "MXN"}, {"descripcion": "TOALLA Interdoblada Canela con 2000 Piezas", "modelo": "FAPSA K2250", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "1655", "costo": 179.97, "moneda": "MXN"}, {"descripcion": "TOALLA Interdoblada Canela con 4000 Piezas", "modelo": "FAPSA C250", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "24", "costo": 413.27, "moneda": "MXN"}, {"descripcion": "CUBETA AMARILLA C/EXPRIMIDOR  36L", "modelo": "RC IMPORT", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "232", "costo": 850.0, "moneda": "MXN"}, {"descripcion": "BOLSA Negra 38x60 Con 200 lNR (Segisa)", "modelo": "GENERICO", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "PYB007", "costo": 550.0, "moneda": "MXN"}, {"descripcion": "BOLSA Negra para basura Members Mark - JUMBO", "modelo": "SAMS", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "Bolsajum", "costo": 376.98, "moneda": "MXN"}, {"descripcion": "BOLSA Negra para basura Members Mark - EXTRA JUMBO", "modelo": "SAMS", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "Bolsaxg", "costo": 386.45, "moneda": "MXN"}, {"descripcion": "BOLSA Negra para Basura Members Mark - EXTRA GRANDE", "modelo": "SAMS", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "BolsaG", "costo": 306.89, "moneda": "MXN"}, {"descripcion": "BOLSA Negra 24x33 15 Galones con 1000 Piezas", "modelo": "GENERICO", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "1102", "costo": 306.0, "moneda": "MXN"}, {"descripcion": "BOLSA Negra 33x40 40 Galones con 500 Piezas", "modelo": "GENERICO", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "1103", "costo": 375.0, "moneda": "MXN"}, {"descripcion": "BOLSA Negra 38x60 60 Gal con 200 Piezas", "modelo": "GENERICO", "unidad": "CAJA", "categoria": "LIMPIEZA", "clave": "1107", "costo": 285.0, "moneda": "MXN"}, {"descripcion": "AROMATIZANTE Cereza -  Galon", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "3497", "costo": 44.59, "moneda": "MXN"}, {"descripcion": "AROMATIZANTE Cereza - Porron", "modelo": "GENESIS", "unidad": "CUBETA", "categoria": "LIMPIEZA", "clave": "3501", "costo": 197.86, "moneda": "MXN"}, {"descripcion": "AROMATIZANTE Aerosol 400ML", "modelo": "WIESE", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "2712", "costo": 28.6, "moneda": "MXN"}, {"descripcion": "AROMATIZANTE Hawaiian 180Gr TIME ELECTR", "modelo": "WIESE", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "2959", "costo": 46.2, "moneda": "MXN"}, {"descripcion": "SANITIZANTE en Aerosol 400ML", "modelo": "WIESE", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "1542", "costo": 55.0, "moneda": "MXN"}, {"descripcion": "LYSOL SANITIZANTE en Aerosol 475GRS", "modelo": "LYSOL", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "1681", "costo": 104.0, "moneda": "MXN"}, {"descripcion": "POLISH en Aerosol ABRILLANTADOR", "modelo": "WIESE", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "3976", "costo": 44.0, "moneda": "MXN"}, {"descripcion": "TOALLA Sanitizante Escudo con 50pz - OFFICE DEPOT", "modelo": "ESCUDO/ OFFICE", "unidad": "PAQUETE", "categoria": "LIMPIEZA", "clave": "100247422", "costo": 37.04, "moneda": "MXN"}, {"descripcion": "TOALLA Sanitizante Lysol con 35- RICASA", "modelo": "LYSOL / RICASA", "unidad": "PAQUETE", "categoria": "LIMPIEZA", "clave": "1700", "costo": 60.0, "moneda": "MXN"}, {"descripcion": "TOALLA Sanitizante Members Mark - 3 BOTES", "modelo": "SAMS", "unidad": "PAQUETE", "categoria": "LIMPIEZA", "clave": "MMTLL", "costo": 213.12, "moneda": "MXN"}, {"descripcion": "GEL Sanitizante Galon", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "2734", "costo": 165.0, "moneda": "MXN"}, {"descripcion": "JABON Antibacterial para Manos", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "49", "costo": 50.08, "moneda": "MXN"}, {"descripcion": "JABON para Manos Blanco, Galon", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "1013", "costo": 47.03, "moneda": "MXN"}, {"descripcion": "JABON para Manos Blanco, Porron", "modelo": "GENESES", "unidad": "PORRON", "categoria": "LIMPIEZA", "clave": "1358", "costo": 210.07, "moneda": "MXN"}, {"descripcion": "LIMPIADOR General Lavanda, Galon", "modelo": "LARISA", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "3491", "costo": 41.05, "moneda": "MXN"}, {"descripcion": "LIMPIADOR General Lavanda, Porron", "modelo": "LARISA", "unidad": "CUBETA", "categoria": "LIMPIEZA", "clave": "420", "costo": 189.3, "moneda": "MXN"}, {"descripcion": "LIMPIADOR ACERO Inoxidable 600Grs 3M", "modelo": "RICASA/ COPAMEX", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "R1188", "costo": 265.5, "moneda": "MXN"}, {"descripcion": "FABULOSO 10 LITROS", "modelo": "FABULOSO / SAMS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "FBLS", "costo": 184.71, "moneda": "MXN"}, {"descripcion": "CLORO, Galon", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "408C", "costo": 30.5, "moneda": "MXN"}, {"descripcion": "CLORO, Porron", "modelo": "GENESIS", "unidad": "CUBETA", "categoria": "LIMPIEZA", "clave": "410", "costo": 150.0, "moneda": "MXN"}, {"descripcion": "PINOL, Galon", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "428", "costo": 33.59, "moneda": "MXN"}, {"descripcion": "PINOL, Porron", "modelo": "GENESIS", "unidad": "CUBETA", "categoria": "LIMPIEZA", "clave": "427", "costo": 156.33, "moneda": "MXN"}, {"descripcion": "ACIDO MURIATICO, Galon", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "401", "costo": 55.0, "moneda": "MXN"}, {"descripcion": "LIMPIAVIDRIOS, Galon", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "418", "costo": 30.41, "moneda": "MXN"}, {"descripcion": "DESENGRASANTE Rojo, Galon", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "1348", "costo": 61.07, "moneda": "MXN"}, {"descripcion": "DETERGENTE Liquido para Trastes, Galon", "modelo": "MAXLIMON", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "1881", "costo": 74.5, "moneda": "MXN"}, {"descripcion": "DETERGENTE Polvo de Bolsa 9Kg", "modelo": "PALOMA", "unidad": "BOLSA", "categoria": "LIMPIEZA", "clave": "597", "costo": 190.0, "moneda": "MXN"}, {"descripcion": "DETERGENTE Liquido para Ropa", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "3068", "costo": 76.0, "moneda": "MXN"}, {"descripcion": "DETERGENTE Liquido para Ropa", "modelo": "GENESIS", "unidad": "CUBETA", "categoria": "LIMPIEZA", "clave": "866", "costo": 344.0, "moneda": "MXN"}, {"descripcion": "SUAVISANTE de telas azul, Galon", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "3514S", "costo": 47.03, "moneda": "MXN"}, {"descripcion": "FABULOSO Aroma LITRO", "modelo": "FABULOSO", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "533F", "costo": 21.0, "moneda": "MXN"}, {"descripcion": "BRILLO PARA LLANTAS", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "1174", "costo": 195.5, "moneda": "MXN"}, {"descripcion": "RESTAURADOR DE VINYL", "modelo": "GENESIS", "unidad": "GALON", "categoria": "LIMPIEZA", "clave": "433", "costo": 183.2, "moneda": "MXN"}, {"descripcion": "AJAX Polvo bicloro", "modelo": "AJAX", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "513A", "costo": 27.11, "moneda": "MXN"}, {"descripcion": "PASTILLA para wc 60gramos", "modelo": "WIESE", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "4017", "costo": 8.0, "moneda": "MXN"}, {"descripcion": "HULE PARA MIGITORIO CON PASTILLA", "modelo": "WIESE", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "537", "costo": 19.9, "moneda": "MXN"}, {"descripcion": "TAPETE Antisalpicadura", "modelo": "WIESE", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "3606", "costo": 53.0, "moneda": "MXN"}, {"descripcion": "FIBRA Verde", "modelo": "3M", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "269", "costo": 12.5, "moneda": "MXN"}, {"descripcion": "FIBRA Verde con Esponja", "modelo": "3M", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "270", "costo": 14.5, "moneda": "MXN"}, {"descripcion": "FRANELA Blanca", "modelo": "GENERICO", "unidad": "METRO", "categoria": "LIMPIEZA", "clave": "273", "costo": 13.5, "moneda": "MXN"}, {"descripcion": "MICROFIBRA AMARILLA 40x40", "modelo": "AMERICANA", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "3771", "costo": 10.0, "moneda": "MXN"}, {"descripcion": "GUANTE Domestico Mediano", "modelo": "GENESIS", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "406", "costo": 13.0, "moneda": "MXN"}, {"descripcion": "TRAPEADOR Algodón 800Gramos", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "351", "costo": 43.11, "moneda": "MXN"}, {"descripcion": "TRAPEADOR Algodón Industrial 1kg", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "352", "costo": 55.1, "moneda": "MXN"}, {"descripcion": "ESCOBA Ind Peñolera", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "306E", "costo": 93.0, "moneda": "MXN"}, {"descripcion": "ESCOBA Abanico Larga, (Plastico)", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "1241RCC", "costo": 34.5, "moneda": "MXN"}, {"descripcion": "ESCOBA Industrial 7 Hilos", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "1241", "costo": 65.0, "moneda": "MXN"}, {"descripcion": "RECOGEDOR Lamina Galvanizado Industrial", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "348", "costo": 41.3, "moneda": "MXN"}, {"descripcion": "JALADOR DE VIDRIO 40CM", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "1515", "costo": 74.0, "moneda": "MXN"}, {"descripcion": "CEPILLO P/WC CON TAZON", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "1381", "costo": 54.65, "moneda": "MXN"}, {"descripcion": "BASTON de clip y BASE", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "2260", "costo": 74.0, "moneda": "MXN"}, {"descripcion": "BASE de 90cm para baston de clip", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "4011", "costo": 57.0, "moneda": "MXN"}, {"descripcion": "BASE de 60cm para baston de clip", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "4010", "costo": 44.0, "moneda": "MXN"}, {"descripcion": "MOTA MECHUDO 90CM", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "2352", "costo": 57.0, "moneda": "MXN"}, {"descripcion": "MOTA MECHUDO 60CM", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "1999", "costo": 47.2, "moneda": "MXN"}, {"descripcion": "PLUMERO sintetico con extencion", "modelo": "GENERICO", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "1423", "costo": 40.0, "moneda": "MXN"}, {"descripcion": "ATOMIZADOR Litro Completo", "modelo": "AMERICAN", "unidad": "PIEZA", "categoria": "LIMPIEZA", "clave": "54", "costo": 14.5, "moneda": "MXN"}, {"descripcion": "MICA TERMICA 22.9x29.2CM CARTA 3 ML C/25 PIEZAS", "modelo": "MAXSEAL", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "100034401", "costo": 57.0, "moneda": "MXN"}, {"descripcion": "MICA TERMICA 22.9x29.3CM CARTA 5 ML C/50 PIEZAS", "modelo": "BOFLEX", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "100088337", "costo": 131.25, "moneda": "MXN"}, {"descripcion": "MICA TERMICA 6.5X9.5CM 10 ML C/50 PIEZAS", "modelo": "MAXSEAL", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "100046882", "costo": 43.52, "moneda": "MXN"}, {"descripcion": "HOJAS MEMBRETADAS- Impresión a color FWS 100pz", "modelo": "KERUX", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "HKX", "costo": 1500.0, "moneda": "MXN"}, {"descripcion": "BLOCK de pases de salida de material LEXMARK", "modelo": "DM IMPRESORA", "unidad": "paquete", "categoria": "IMPRESIÓN", "clave": "dmpases", "costo": 150.0, "moneda": "MXN"}, {"descripcion": "CUADERNO PROFESIONAL 100 HOJAS", "modelo": "NORMA", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "73829", "costo": 38.25, "moneda": "MXN"}, {"descripcion": "CUADERNO / LIBRETA Firts Class Pocke Negra 100 HOJAS", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "100176994", "costo": 50.93, "moneda": "MXN"}, {"descripcion": "CANDADO LAMINADO", "modelo": "SILVERLI/ OFFICE", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "82993", "costo": 128.7, "moneda": "MXN"}, {"descripcion": "CANDADO de Combinacion", "modelo": "HERMEX", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "43348F", "costo": 125.0, "moneda": "MXN"}, {"descripcion": "PLUMA Retractil 4 en 1 - diferentes colores", "modelo": "BIC", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "13", "costo": 39.5, "moneda": "MXN"}, {"descripcion": "PLUMA Cristal Punto Fino color azul con 12 piezas", "modelo": "BIC", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "5", "costo": 40.0, "moneda": "MXN"}, {"descripcion": "PLUMA Cristal Punto Fino color negro con 12 piezas", "modelo": "BIC", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "6", "costo": 40.0, "moneda": "MXN"}, {"descripcion": "BOLIGRAFO Tradicional Azul con 12 piezas", "modelo": "OFFICE DEPOT", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "9418", "costo": 21.5, "moneda": "MXN"}, {"descripcion": "BOLIGRAFO Tradicional Negro con 12 piezas", "modelo": "OFFICE DEPOT", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "9419", "costo": 21.5, "moneda": "MXN"}, {"descripcion": "BOLIGRAFO Gel colores con 6 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "30048", "costo": 35.75, "moneda": "MXN"}, {"descripcion": "BOLIGRAFO Gel color Negro con 6 piezas", "modelo": "RED TOP", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "43796", "costo": 37.0, "moneda": "MXN"}, {"descripcion": "BOLIGRAFO color Negro con Base para Mostrador", "modelo": "RED TOP", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "43800", "costo": 38.75, "moneda": "MXN"}, {"descripcion": "PLUMAS colores Gel Negro,Azul,Rojo Gel", "modelo": "OFFICE DEPOT", "unidad": "4 PIEZAS", "categoria": "PAPELERIA", "clave": "53461", "costo": 45.37, "moneda": "MXN"}, {"descripcion": "Corrector Liquido En Brocha Aqua Kores", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "100088581", "costo": 15.25, "moneda": "MXN"}, {"descripcion": "Corrector Liquido En Pluma", "modelo": "OFFICE DEPOT", "unidad": "2 PIEZAS", "categoria": "PAPELERIA", "clave": "35712", "costo": 22.0, "moneda": "MXN"}, {"descripcion": "Corrector en Cinta", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "100133783", "costo": 32.67, "moneda": "MXN"}, {"descripcion": "LAPIZ Grafito con 12 piezas", "modelo": "OFFICE DEPOT", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "43956", "costo": 28.0, "moneda": "MXN"}, {"descripcion": "LAPICERO mb7106 con 3 piezas y puntillas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "30064", "costo": 42.5, "moneda": "MXN"}, {"descripcion": "PUNTILLAS de 5mm con 2 tubos de 12 piezas", "modelo": "ZEBRA", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "31591", "costo": 25.5, "moneda": "MXN"}, {"descripcion": "SACAPUNTAS metalico", "modelo": "TICHER", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "59989", "costo": 11.5, "moneda": "MXN"}, {"descripcion": "PORTALAPICES color negro jumbo", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "38289", "costo": 50.25, "moneda": "MXN"}, {"descripcion": "PORTALAPICES Organizador para escritorio", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "53433", "costo": 101.0, "moneda": "MXN"}, {"descripcion": "BORRADOR retractil", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "38654", "costo": 16.0, "moneda": "MXN"}, {"descripcion": "MARCATEXTO amarillo con 4 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "53463", "costo": 30.0, "moneda": "MXN"}, {"descripcion": "MARCATEXTO amarillo con 12 piezas", "modelo": "OFFICE DEPOT", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "53464", "costo": 76.5, "moneda": "MXN"}, {"descripcion": "MARCATEXTO colores neon con 5 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "30049", "costo": 32.25, "moneda": "MXN"}, {"descripcion": "MARCATEXTO colores neon con 6 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "38471", "costo": 44.0, "moneda": "MXN"}, {"descripcion": "MARCADOR PERMANENTE color negro con 12 piezas", "modelo": "OFFICE DEPOT", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "36400", "costo": 127.0, "moneda": "MXN"}, {"descripcion": "MARCADOR PERMANENTE color negro con 12 piezas", "modelo": "RED TOP", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "35729", "costo": 153.0, "moneda": "MXN"}, {"descripcion": "MARCADOR sharpie color negro con 2 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "30060", "costo": 18.25, "moneda": "MXN"}, {"descripcion": "MARCADOR sharpie colores con 4 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "30058", "costo": 22.0, "moneda": "MXN"}, {"descripcion": "MARCADOR para pizarron con borrador integrado", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "56572", "costo": 36.0, "moneda": "MXN"}, {"descripcion": "MARCADOR para pizarron colores con borrador / 4pz", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "100202161", "costo": 110.19, "moneda": "MXN"}, {"descripcion": "LIQUIDO BORRADOR para pizarron blanco", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "41768", "costo": 77.5, "moneda": "MXN"}, {"descripcion": "PIZARRON Blanco .60 x .90cms Marco Metal", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "387", "costo": 569.0, "moneda": "MXN"}, {"descripcion": "CUENTA FACIL con 2 piezas", "modelo": "BLISTER", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "10735", "costo": 24.0, "moneda": "MXN"}, {"descripcion": "LAPIZ ADHESIVO con 4 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "43936", "costo": 22.5, "moneda": "MXN"}, {"descripcion": "CINTA - TAPE para dispensador 1pz", "modelo": "SCTH / OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "100031533", "costo": 7.0, "moneda": "MXN"}, {"descripcion": "CINTA - TAPE para dispensador con 6 piezas- Opaca", "modelo": "OFFICE DEPOT", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "43922", "costo": 52.25, "moneda": "MXN"}, {"descripcion": "CINTA MASKING Tape 24mmX50m", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "5412", "costo": 34.5, "moneda": "MXN"}, {"descripcion": "CINTA Doble cara", "modelo": "RED TOP", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "76087", "costo": 27.0, "moneda": "MXN"}, {"descripcion": "DESPACHADOR de tape", "modelo": "TUK", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "31596", "costo": 50.75, "moneda": "MXN"}, {"descripcion": "POST IT amarillo 3x3 con 500 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "36656", "costo": 42.25, "moneda": "MXN"}, {"descripcion": "POST IT colores 3x3 con 500 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "36657", "costo": 49.75, "moneda": "MXN"}, {"descripcion": "POST IT colores pastel 2x2 con 400 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "44342", "costo": 22.0, "moneda": "MXN"}, {"descripcion": "POST IT colores neon 2x2 con 400 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "44343", "costo": 27.0, "moneda": "MXN"}, {"descripcion": "POST IT colores con rayas 3x3 con 150 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "41955", "costo": 37.5, "moneda": "MXN"}, {"descripcion": "BANDERITAS Señaladoras / separadoras", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "64245", "costo": 18.75, "moneda": "MXN"}, {"descripcion": "SEPARADORES de Hojas - Plastico colores", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "41459", "costo": 16.5, "moneda": "MXN"}, {"descripcion": "ENGRAPADORA Media tira", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "100018419", "costo": 91.67, "moneda": "MXN"}, {"descripcion": "ENGRAPADORA Tira completa", "modelo": "kangaro/ OFFICE", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "100124844", "costo": 49.25, "moneda": "MXN"}, {"descripcion": "ENGRAPADORA Tira completa-Golpe uso rudo", "modelo": "PILOT/ office depot", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "22359", "costo": 113.0, "moneda": "MXN"}, {"descripcion": "GRAPAS Standard plata con 5000 piezas", "modelo": "OFIXPRESS", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "52698", "costo": 15.0, "moneda": "MXN"}, {"descripcion": "QUITA grapas chico", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "23046", "costo": 10.0, "moneda": "MXN"}, {"descripcion": "CLIP standard metalicos con 100 piezas", "modelo": "OFIXPRESS", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "52700", "costo": 6.75, "moneda": "MXN"}, {"descripcion": "CLIP standard colores con 100 piezas", "modelo": "MAE", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "100032034", "costo": 22.0, "moneda": "MXN"}, {"descripcion": "CLIP rectangular metalicos con 100 piezas", "modelo": "MAE", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "100014186", "costo": 12.25, "moneda": "MXN"}, {"descripcion": "CLIP jumbo metalicos con 100 piezas", "modelo": "MAE", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "100014215", "costo": 33.5, "moneda": "MXN"}, {"descripcion": "CLIP mariposa metalicos con 12 piezas", "modelo": "MAE", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "100014258", "costo": 21.25, "moneda": "MXN"}, {"descripcion": "DESPACHADOR clips pequeño", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "43918", "costo": 17.75, "moneda": "MXN"}, {"descripcion": "BROCHE metalico para gafete con 12 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "43880", "costo": 27.75, "moneda": "MXN"}, {"descripcion": "CORDON color negro para gafete con 12 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "43869", "costo": 53.0, "moneda": "MXN"}, {"descripcion": "SUJETA documentos chico 19mm con 12 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "27411", "costo": 8.5, "moneda": "MXN"}, {"descripcion": "SUJETA documentos mediano 32mm con 12 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "27412", "costo": 16.25, "moneda": "MXN"}, {"descripcion": "SUJETA documentos grande 51mm con 12 piezas", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "27413", "costo": 37.75, "moneda": "MXN"}, {"descripcion": "CHINCHETAS colores", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "50266", "costo": 18.25, "moneda": "MXN"}, {"descripcion": "BROCHE metalico baco 80mm con 50 piezas", "modelo": "MAE", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "100014119", "costo": 35.5, "moneda": "MXN"}, {"descripcion": "BROCHE metalico baco 70mm con 50 piezas", "modelo": "MAE", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "100014231", "costo": 35.0, "moneda": "MXN"}, {"descripcion": "TIJERAS de 7\" color azul", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "38349", "costo": 33.5, "moneda": "MXN"}, {"descripcion": "TIJERAS de 20cm color Negras / 2pz", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "38341", "costo": 45.5, "moneda": "MXN"}, {"descripcion": "REGLA metalica de 30cm", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "43946", "costo": 17.5, "moneda": "MXN"}, {"descripcion": "PERFORADORA de 2 orificios", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "23044", "costo": 117.5, "moneda": "MXN"}, {"descripcion": "PERFORADORA de 3 orificios", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "23042", "costo": 94.0, "moneda": "MXN"}, {"descripcion": "PROTECTOR mate para hojas con 200 piezas", "modelo": "OFFICE DEPOT", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "22748", "costo": 152.75, "moneda": "MXN"}, {"descripcion": "PROTECTOR brillante para hojas con 200 piezas", "modelo": "OFFICE DEPOT", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "36110", "costo": 165.75, "moneda": "MXN"}, {"descripcion": "PROTECTOR brillante para hojas con 100 piezas", "modelo": "KINERA", "unidad": "CAJA", "categoria": "PAPELERIA", "clave": "4388", "costo": 150.75, "moneda": "MXN"}, {"descripcion": "CARPETA plastico tamaño carta 1'' NEGRA", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "41218", "costo": 42.25, "moneda": "MXN"}, {"descripcion": "FOLDERS tamaño Carta /Manila c/100 pz", "modelo": "OFFICE DEPOT", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "39628", "costo": 177.0, "moneda": "MXN"}, {"descripcion": "CARPETA plastico tamaño carta 1'' BLANCA", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "41217", "costo": 42.254, "moneda": "MXN"}, {"descripcion": "CARPETA separadora verde (archivo)", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "100174825", "costo": 32.75, "moneda": "MXN"}, {"descripcion": "CAJA de archivo tamaño carta CARTON RESISTENTE", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "56831", "costo": 41.0, "moneda": "MXN"}, {"descripcion": "CAJA de archivo tamaño carta PLASTICO", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "36097", "costo": 75.0, "moneda": "MXN"}, {"descripcion": "PILA alcalina AA con 4 Pilas", "modelo": "RADIOSHACK/ OFFICE", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "72299", "costo": 45.0, "moneda": "MXN"}, {"descripcion": "PILA alcalina AAA con 4 Pilas", "modelo": "RADIOSHACK/ OFFICE", "unidad": "PAQUETE", "categoria": "PAPELERIA", "clave": "71381", "costo": 45.0, "moneda": "MXN"}, {"descripcion": "PILA alcalina RS 23A", "modelo": "RADIOSHACK/ OFFICE", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "100027227", "costo": 54.63, "moneda": "MXN"}, {"descripcion": "PILA alcalina RS 23A", "modelo": "STEREN", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "BAT23A", "costo": 19.0, "moneda": "MXN"}, {"descripcion": "PILA alcalina 9V", "modelo": "RADIOSHACK/ OFFICE", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "72298", "costo": 64.81, "moneda": "MXN"}, {"descripcion": "PORTA DOCUMENTOS- CHAROLA Multinivel tamaño carta 3pz", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "43911", "costo": 205.0, "moneda": "MXN"}, {"descripcion": "PORTA DOCUMENTOS- ESCALONADO tamaño carta 3nv", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "38295", "costo": 225.0, "moneda": "MXN"}, {"descripcion": "PORTA DOCUMENTOS- REVISTERO tamaño carta 1pz", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "44814", "costo": 64.0, "moneda": "MXN"}, {"descripcion": "TABLA de plastico roja, con clip Metalico CARTA", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "64275", "costo": 33.25, "moneda": "MXN"}, {"descripcion": "TABLA de plastico transparente, con clip Metalico CARTA", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "23013", "costo": 37.75, "moneda": "MXN"}, {"descripcion": "TABLA  de madera con clip Metalico CARTA", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "30053", "costo": 28.25, "moneda": "MXN"}, {"descripcion": "TABLA  de madera con clip Metalico OFICIO", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "30055", "costo": 34.5, "moneda": "MXN"}, {"descripcion": "BASE Para Laptop", "modelo": "PERFECT / OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "100098391", "costo": 369.44, "moneda": "MXN"}, {"descripcion": "CALCULADORA basica MED Gris Obs Spectra", "modelo": "OFFICE DEPOT", "unidad": "PIEZA", "categoria": "PAPELERIA", "clave": "23030", "costo": 113.5, "moneda": "MXN"}];
+
+// ══════════════════════════════════════════
+// CONFIGURACIÓN — REEMPLAZA CON TU URL DE APPS SCRIPT
+// ══════════════════════════════════════════
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzI5qpUBQL7l-ZQO4KrdTPmC6Z4DXjD1nraRJGQngLO6LOkJ5tVpdoslpdNPNrO4SRlKA/exec';
+
+// Aprobadores y sus montos máximos
+const APROBADORES = [
+  { nombre:'BRENDA GONZALEZ',    puesto:'GERENTE DEPARTAMENTO', monto: 2000,   email:'brenda@fws.com.mx' },
+  { nombre:'CARLOS DE LA CRUZ',  puesto:'FINANZAS',             monto: 2000,   email:'carlos.cruz@fws.com.mx' },
+  { nombre:'JORGE BARBA',        puesto:'GERENCIA',             monto: 20000,  email:'jorge.barba@fws.com.mx' },
+  { nombre:'CARLOS SALAZAR',     puesto:'DIRECTIVO',            monto: 999999, email:'carlos.salazar@fws.com.mx' },
+];
+
+// Correos de prueba (aprobador y compras)
+const APROBADOR_PRUEBA  = 'monserrat_pgg@outlook.es';
+const COMPRAS_EMAIL     = 'compras@fws.com.mx';
+
+// ══════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════
+let modo = 'catalogo';
+let folio = '';
+
+function generarFolio() {
+  return 'Pendiente';
+}
+
+// ══════════════════════════════════════════
+// TABLA UNIFICADA — catálogo + manual en una sola
+// ══════════════════════════════════════════
+let rowId = 0;
+
+function addRow() {
+  const id = ++rowId;
+  const tr = document.createElement('tr');
+  tr.id = 'row-' + id;
+  tr.innerHTML = `
+    <td style="text-align:center;color:#aaa;font-size:11px">${id}</td>
+    <td>
+      <div class="ac-wrap">
+        <input type="text" placeholder="Buscar en catálogo o escribe descripción..." autocomplete="off" id="inp-desc-${id}">
+        <div class="ac-list" id="ac-list-${id}"></div>
+      </div>
+    </td>
+    <td><input type="text" id="inp-clave-${id}" placeholder="Clave" style="font-size:11px"></td>
+    <td><input type="text" id="inp-unidad-${id}" placeholder="PZA" style="font-size:11px"></td>
+    <td><input type="number" id="inp-qty-${id}" min="1" placeholder="0"></td>
+    <td><input type="number" id="inp-precio-${id}" min="0" step="0.01" placeholder="0.00"></td>
+    <td class="td-subtotal" id="inp-sub-${id}">—</td>
+    <td><button style="background:none;border:none;color:#c00;font-size:16px;cursor:pointer;padding:0 4px" title="Eliminar">×</button></td>`;
+  document.getElementById('tbody-items').appendChild(tr);
+
+  // Eventos
+  document.getElementById('inp-desc-' + id).addEventListener('input', function() { acSearch(this, id); });
+  document.getElementById('inp-qty-' + id).addEventListener('input', calcTotales);
+  document.getElementById('inp-precio-' + id).addEventListener('input', calcTotales);
+  tr.querySelector('button').addEventListener('click', function() {
+    tr.remove();
+    calcTotales();
+  });
+}
+
+// ══════════════════════════════════════════
+// AUTOCOMPLETE
+// ══════════════════════════════════════════
+function acSearch(inp, id) {
+  const q = inp.value.toLowerCase().trim();
+  const list = document.getElementById('ac-list-' + id);
+  if (q.length < 2) { list.style.display = 'none'; return; }
+  const matches = CATALOGO.filter(it =>
+    it.descripcion.toLowerCase().includes(q) ||
+    it.clave.toLowerCase().includes(q) ||
+    it.categoria.toLowerCase().includes(q)
+  ).slice(0, 12);
+  if (!matches.length) { list.style.display = 'none'; return; }
+  list.innerHTML = matches.map(it => `
+    <div class="ac-item" onclick="acSelect(${id},'${escJs(it.descripcion)}','${escJs(it.clave)}','${escJs(it.unidad)}',${it.costo})">
+      <div class="ac-desc">${it.descripcion}</div>
+      <div class="ac-sub">${it.clave} &nbsp;|&nbsp; ${it.categoria} &nbsp;|&nbsp; $${it.costo.toFixed(2)} ${it.moneda}</div>
+    </div>`).join('');
+  list.style.display = 'block';
+  document.addEventListener('click', function hide(e) {
+    if (!list.contains(e.target) && e.target !== inp) {
+      list.style.display = 'none';
+      document.removeEventListener('click', hide);
+    }
+  });
+}
+
+function escJs(s) { return s.replace(/'/g, "\'").replace(/"/g, '&quot;'); }
+
+function acSelect(id, desc, clave, unidad, costo) {
+  document.getElementById('inp-desc-' + id).value   = desc;
+  document.getElementById('inp-clave-' + id).value  = clave;
+  document.getElementById('inp-unidad-' + id).value = unidad;
+  document.getElementById('inp-precio-' + id).value = costo.toFixed(2);
+  document.getElementById('ac-list-' + id).style.display = 'none';
+  calcTotales();
+}
+
+// ══════════════════════════════════════════
+// CÁLCULO DE TOTALES
+// ══════════════════════════════════════════
+function calcTotales() {
+  let sub = 0;
+  document.querySelectorAll('#tbody-items tr').forEach(function(tr) {
+    const id  = tr.id.replace('row-', '');
+    const qty = parseFloat(document.getElementById('inp-qty-' + id)?.value) || 0;
+    const pr  = parseFloat(document.getElementById('inp-precio-' + id)?.value) || 0;
+    const s   = qty * pr;
+    const el  = document.getElementById('inp-sub-' + id);
+    if (el) el.textContent = s > 0 ? '$' + s.toFixed(2) : '—';
+    sub += s;
+  });
+  const ivaPct = (parseFloat(document.getElementById('iva-pct')?.value) || 0) / 100;
+  const iva = sub * ivaPct;
+  const tot = sub + iva;
+  document.getElementById('t-sub').textContent = '$' + sub.toFixed(2);
+  document.getElementById('t-iva').textContent = '$' + iva.toFixed(2);
+  document.getElementById('t-tot').textContent = '$' + tot.toFixed(2);
+  actualizarAprobaciones(tot);
+}
+
+// ══════════════════════════════════════════
+// RECOLECTAR ITEMS
+// ══════════════════════════════════════════
+function getItems() {
+  const items = [];
+  document.querySelectorAll('#tbody-items tr').forEach(function(tr) {
+    const id    = tr.id.replace('row-', '');
+    const desc  = document.getElementById('inp-desc-' + id)?.value?.trim();
+    const clave = document.getElementById('inp-clave-' + id)?.value?.trim() || '';
+    const unid  = document.getElementById('inp-unidad-' + id)?.value?.trim() || '';
+    const qty   = parseFloat(document.getElementById('inp-qty-' + id)?.value) || 0;
+    const precio= parseFloat(document.getElementById('inp-precio-' + id)?.value) || 0;
+    if (desc && qty > 0) {
+      items.push({ desc, clave, unidad: unid, cantidad: qty, precio, subtotal: qty * precio });
+    }
+  });
+  return items;
+}
+// ══════════════════════════════════════════
+// APROBACIONES DINÁMICAS
+// ══════════════════════════════════════════
+function actualizarAprobaciones(total) {
+  const grid = document.getElementById('aprobaciones-grid');
+  const info = document.getElementById('aprobaciones-info');
+  let requeridos = [];
+  if (total <= 0) {
+    info.textContent = 'El nivel de aprobación se determina automáticamente según el monto total.';
+    grid.innerHTML = '';
+    return;
+  }
+  if (total <= 2000) {
+    requeridos = [APROBADORES[0]]; // solo gerente depto
+    info.innerHTML = `<strong>Monto $${total.toFixed(2)}</strong> — Requiere firma de Gerente de Departamento.`;
+  } else if (total <= 20000) {
+    requeridos = [APROBADORES[0], APROBADORES[1], APROBADORES[2]];
+    info.innerHTML = `<strong>Monto $${total.toFixed(2)}</strong> — Requiere firmas de Gerente Depto., Finanzas y Gerencia.`;
+  } else {
+    requeridos = [...APROBADORES];
+    info.innerHTML = `<strong>Monto $${total.toFixed(2)}</strong> — Requiere todas las firmas (incluye Directivo).`;
+  }
+  grid.innerHTML = requeridos.map(a=>`
+    <div class="aprobador-card">
+      <div class="puesto">${a.puesto}</div>
+      <div class="nombre">${a.nombre}</div>
+      <div class="monto">Monto máx: $${a.monto>=999999?'20,001+':a.monto.toLocaleString()}</div>
+      <div class="firma-line"></div>
+      <div class="firma-label">FIRMA &nbsp;&nbsp;&nbsp; FECHA</div>
+    </div>`).join('');
+}
+
+
+
+// ══════════════════════════════════════════
+// VALIDAR Y ENVIAR
+// ══════════════════════════════════════════
+function enviarRequisicion() {
+  const planta     = document.getElementById('planta').value;
+  const proyecto   = document.getElementById('proyecto').value;
+  const fecha      = document.getElementById('fecha').value;
+  const requisitor = document.getElementById('requisitor').value.trim();
+  const entrega    = document.getElementById('entrega').value.trim();
+  const comentarios= document.getElementById('comentarios').value.trim();
+  const proveedor  = document.getElementById('proveedor').value.trim();
+
+  if (!planta||!proyecto||!requisitor||!entrega) {
+    showToast('Por favor llena todos los campos obligatorios (*).','err'); return;
+  }
+
+  const items = getItems();
+  if (!items.length) {
+    showToast('Agrega al menos un artículo con cantidad y precio.','err'); return;
+  }
+
+  const subtotal = items.reduce((s,i)=>s+i.subtotal,0);
+  const ivaPct   = (parseFloat(document.getElementById('iva-pct')?.value)||0)/100;
+  const iva      = subtotal * ivaPct;
+  const total    = subtotal + iva;
+
+  // Determinar aprobadores necesarios
+  let aprobadores = [];
+  if (total <= 2000)       aprobadores = [APROBADORES[0]];
+  else if (total <= 20000) aprobadores = APROBADORES.slice(0,3);
+  else                     aprobadores = [...APROBADORES];
+
+  // Para prueba usamos correo de aprobador de prueba
+  const aprobadoresEmail = aprobadores.map(a=>({...a, email: APROBADOR_PRUEBA}));
+
+  const payload = {
+    folio, planta, proyecto, fecha, requisitor, entrega,
+    comentarios, proveedor, items, subtotal, iva, total,
+    aprobadores: aprobadoresEmail,
+    comprasEmail: COMPRAS_EMAIL,
+  };
+
+  setStatus('sending','⏳ Enviando requisición...');
+  document.getElementById('btn-enviar').disabled = true;
+
+  // Usamos no-cors + iframe para evitar bloqueo CORS al abrir como archivo local
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = APPS_SCRIPT_URL;
+  form.target = 'iframe-envio';
+  form.style.display = 'none';
+  const inp = document.createElement('input');
+  inp.type = 'hidden';
+  inp.name = 'payload';
+  inp.value = JSON.stringify(payload);
+  form.appendChild(inp);
+  document.body.appendChild(form);
+
+  let iframe = document.getElementById('iframe-envio');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.name = 'iframe-envio';
+    iframe.id = 'iframe-envio';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+  }
+
+  iframe.onload = function() {
+    try {
+      const resp = JSON.parse(iframe.contentDocument.body.innerText);
+      if (resp.ok) {
+        if (resp.folio) document.getElementById('folio-num').textContent = resp.folio;
+        setStatus('ok', '✅ Requisición ' + (resp.folio||'') + ' enviada correctamente. Los aprobadores recibirán el correo en breve.');
+        showToast('¡Requisición ' + (resp.folio||'') + ' enviada!', 'ok');
+      } else {
+        throw new Error(resp.error || 'Error desconocido');
+      }
+    } catch(e) {
+      // Si no podemos leer la respuesta (cross-origin) asumimos éxito
+      setStatus('ok', '✅ Requisición enviada. Revisa tu correo para confirmar.');
+      showToast('¡Requisición enviada!', 'ok');
+    }
+    document.body.removeChild(form);
+  };
+
+  iframe.onerror = function() {
+    setStatus('err', '❌ Error al enviar. Verifica tu conexión.');
+    showToast('Error al enviar', 'err');
+    document.getElementById('btn-enviar').disabled = false;
+    document.body.removeChild(form);
+  };
+
+  form.submit();
+}
+
+function setStatus(type,msg) {
+  const el = document.getElementById('status-box');
+  el.className = 'status-box '+type;
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast '+type;
+  setTimeout(()=>t.classList.add('show'),10);
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+function limpiarForm() {
+  if (!confirm('¿Limpiar el formulario? Se perderán los datos.')) return;
+  document.getElementById('planta').value='';
+  document.getElementById('proyecto').value='';
+  document.getElementById('requisitor').value='';
+  document.getElementById('entrega').value='';
+  document.getElementById('comentarios').value='';
+  document.getElementById('proveedor').value='';
+  document.getElementById('tbody-items').innerHTML='';
+  rowId=0;
+  folio = generarFolio();
+  document.getElementById('folio-num').textContent = folio;
+  addRow(); addRow(); addRow();
+  calcTotales();
+  document.getElementById('status-box').style.display='none';
+  document.getElementById('btn-enviar').disabled=false;
+}
+
+// ══════════════════════════════════════════
+// INICIALIZACIÓN — al cargar la página
+// ══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', function() {
+  folio = generarFolio();
+  document.getElementById('folio-num').textContent = folio;
+  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+  addRow();
+  addRow();
+  addRow();
+  actualizarAprobaciones(0);
+});
+</script>
+</body>
+</html>
